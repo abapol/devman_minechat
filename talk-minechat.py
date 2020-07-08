@@ -1,5 +1,5 @@
 import asyncio
-
+import logging
 
 
 async def write_chat():
@@ -9,12 +9,14 @@ async def write_chat():
     }
     reader, writer = await asyncio.open_connection('minechat.dvmn.org', 5050)
 
-    datar = await reader.readline()
-    print(datar.decode())
+    dataread = await reader.readline()
+    if dataread:
+        logging.debug(f'sender:{dataread.decode()}')
 
-    writer.write(user["account_hash"].encode())
-    writer.write('\n'.encode())
+    datawrite = user["account_hash"]+'\n'
+    writer.write(datawrite.encode())
     await writer.drain()
+    logging.debug(f'writer:{datawrite}')
 
     writer.write('Hello!\n\n'.encode())
     await writer.drain()
