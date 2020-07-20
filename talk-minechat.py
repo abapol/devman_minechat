@@ -1,15 +1,8 @@
+from functools import partial
+import argparse
 import asyncio
 import logging
 import json
-
-'''
-    user = {
-        "nickname": "Keen newuser",
-        "account_hash": "bd24bee4-c11d-11ea-8c47-0242ac110002"
-    }
-    
-'''
-
 
 
 async def reader_data(reader):
@@ -25,22 +18,21 @@ async def writer_data(writer, message):
 
 
 
-async def register(reader, writer):
+async def register(reader, writer, token, nickname):
 
-    message = input(await reader_data(reader))
-    await writer_data(writer, message)
+    await reader_data(reader)
+    await writer_data(writer, token)
 
     readdata = await reader_data(reader)
-    if message:
+    if token:
         user = json.loads(readdata)
         if user is None:
             print('Неизвестный токен. Проверьте его или зарегистрируйте заново.')
             return None
         else:
-            print('Вы вошли')
             return user
 
-    await writer_data(writer, input(readdata).replace(r'\n',''))
+    await writer_data(writer, nickname.replace(r'\n',''))
     return json.loads(await reader_data(reader))
 
 
@@ -50,32 +42,36 @@ async def authorise(reader, writer, user):
     readdata = await reader_data(reader)
 
 
-async def submit_message(writer):
-    while True:
-        message = input().replace(r'\n','')
-        await writer_data(writer, message)
-        if message.lower() == 'bye':
-            break
+async def submit_message(writer, message):    
+    await writer_data(writer, message.replace(r'\n',''))        
 
     
-async def minechat():
-    while True:
-        reader, writer = await asyncio.open_connection('minechat.dvmn.org', 5050)
-        user = await register(reader, writer)
-        writer.close()
-        await writer.wait_closed()    
-        if user:
-            break
+async def minechat(parser_args):
+    
+    reader, writer = await asyncio.open_connection(parser_args.host, parser_args.port)
+    user = await register(reader, writer, parser_args.token, parser_args.nickname)
+    writer.close()
+    await writer.wait_closed()    
+    if not user:
+        return
 
-    reader, writer = await asyncio.open_connection('minechat.dvmn.org', 5050)        
+    reader, writer = await asyncio.open_connection(parser_args.host, parser_args.port)        
     await authorise(reader, writer, user)
-    await submit_message(writer)
-
+    await submit_message(writer, parser_args.message)
     writer.close()
     await writer.wait_closed()    
         
 
-
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--host', type=str, default='minechat.dvmn.org', help="Host name")
+    parser.add_argument('--port', type=int, default=5050, help="Port number")
+    parser.add_argument('--token', type=str, default='', help="Enter your token")
+    parser.add_argument('--message', type=str, default='Hello', help="Enter your massage")
+    parser.add_argument('--nickname', type=str, default='Zina', help="Your name")
+    
+    minechat = partial(minechat, parser_args=parser.parse_args())
+
     asyncio.run(minechat())
