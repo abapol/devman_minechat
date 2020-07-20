@@ -40,7 +40,7 @@ async def register(reader, writer):
             print('Вы вошли')
             return user
 
-    await writer_data(writer, input(readdata))
+    await writer_data(writer, input(readdata).replace(r'\n',''))
     return json.loads(await reader_data(reader))
 
 
@@ -52,7 +52,7 @@ async def authorise(reader, writer, user):
 
 async def submit_message(writer):
     while True:
-        message = input()
+        message = input().replace(r'\n','')
         await writer_data(writer, message)
         if message.lower() == 'bye':
             break
