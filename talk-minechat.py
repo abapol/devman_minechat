@@ -24,16 +24,14 @@ async def register(reader, writer, token, nickname):
     await writer_data(writer, token)
 
     readdata = await reader_data(reader)
-    if token:
-        user = json.loads(readdata)
-        if user is None:
-            print('Неизвестный токен. Проверьте его или зарегистрируйте заново.')
-            return None
-        else:
-            return user
-
-    await writer_data(writer, nickname.replace(r'\n',''))
-    return json.loads(await reader_data(reader))
+    if not token:
+        await writer_data(writer, nickname.replace(r'\n',''))
+        return json.loads(await reader_data(reader))
+    
+    user = json.loads(readdata)
+    if user is None:
+        print('Неизвестный токен. Проверьте его или зарегистрируйте заново.')
+    return user
 
 
 async def authorise(reader, writer, user):
@@ -48,18 +46,20 @@ async def submit_message(writer, message):
     
 async def minechat(parser_args):
     
-    reader, writer = await asyncio.open_connection(parser_args.host, parser_args.port)
-    user = await register(reader, writer, parser_args.token, parser_args.nickname)
-    writer.close()
-    await writer.wait_closed()    
-    if not user:
-        return
+    try:
+        reader, writer = await asyncio.open_connection(parser_args.host, parser_args.port)
+        user = await register(reader, writer, parser_args.token, parser_args.nickname)
+        writer.close()
+        await writer.wait_closed()    
+        if not user:
+            return
 
-    reader, writer = await asyncio.open_connection(parser_args.host, parser_args.port)        
-    await authorise(reader, writer, user)
-    await submit_message(writer, parser_args.message)
-    writer.close()
-    await writer.wait_closed()    
+        reader, writer = await asyncio.open_connection(parser_args.host, parser_args.port)        
+        await authorise(reader, writer, user)
+        await submit_message(writer, parser_args.message)
+    finally:
+        writer.close()
+        await writer.wait_closed()    
         
 
 if __name__ == '__main__':

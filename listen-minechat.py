@@ -6,18 +6,23 @@ from functools import partial
 
 
 async def read_chat(parser_args):
-    reader, writer = await asyncio.open_connection(parser_args.host, parser_args.port)
 
-    while True:
-        datetime_now = datetime.now().strftime("%Y.%m.%d %H:%M")
+    try:
+        reader, writer = await asyncio.open_connection(parser_args.host, parser_args.port)
 
-        data = await reader.readline()
-        if not data:
-            break
+        while True:
+            datetime_now = datetime.now().strftime("%Y.%m.%d %H:%M")
 
-        async with aiofiles.open(parser_args.history, mode="a", encoding="utf-8") as outfile:
-            await outfile.write(f'[{datetime_now}] {data.decode()}')
-            outfile.close()
+            data = await reader.readline()
+            if not data:
+                break
+
+            async with aiofiles.open(parser_args.history, mode="a", encoding="utf-8") as outfile:
+                await outfile.write(f'[{datetime_now}] {data.decode()}')
+                outfile.close()
+    finally:
+        writer.close()
+        await writer.wait_closed()
 
 
 if __name__ == '__main__':
