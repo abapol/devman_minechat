@@ -25,9 +25,10 @@ The script will connect on port 5000, host default: minechat.dvmn.org.
 
 You can use this arguments:
 
---host : For connect to your host (default: minechat.dvmn.org)
+For connect to your host (default: minechat.dvmn.org):
+```--host```
 
---port : For use your port (default: 5000)
+```--port``` : For use your port (default: 5000)
 
 --history : To set path to file for writing chat history
 
