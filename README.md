@@ -25,12 +25,14 @@ The script will connect on port 5000, host default: minechat.dvmn.org.
 
 You can use this arguments:
 
-For connect to your host (default: minechat.dvmn.org):
+For connect to your host (default: minechat.dvmn.org): 
 ```--host```
 
-```--port``` : For use your port (default: 5000)
+For use your port (default: 5000): 
+```--port```
 
---history : To set path to file for writing chat history
+To set path to file for writing chat history: 
+```--history```
 
 
 Example:
@@ -50,17 +52,22 @@ The script will connect on port 5050, host default: minechat.dvmn.org.
 
 ## Arguments
 
-You can use this arguments:
+You can use this arguments: 
 
---host : For connect to your host (default: minechat.dvmn.org)
+For connect to your host (default: minechat.dvmn.org): 
+```--host``` 
 
---port : For use your port (default: 5050)
+For use your port (default: 5050): 
+```--port```
 
---token : To enter in minechat using your token
+To enter in minechat using your token: 
+```--token```
 
---nickname : To register in minechat with new name
+To register in minechat with new name: 
+```--nickname```
 
---message : Send some text
+Send some text: 
+```--message```
 
 
 Example:
