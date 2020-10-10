@@ -17,6 +17,10 @@ async def writer_data(writer, message):
     logging.debug(datawrite)
 
 
+async def authenticate(reader, writer, nickname):
+    await writer_data(writer, nickname)
+    return json.loads(await reader_data(reader))
+
 
 async def register(reader, writer, token, nickname):
 
@@ -24,15 +28,14 @@ async def register(reader, writer, token, nickname):
     await writer_data(writer, token)
 
     readdata = await reader_data(reader)
-    if not token:
-        await writer_data(writer, nickname.replace(r'\n',''))
-        return json.loads(await reader_data(reader))
-    
-    user = json.loads(readdata)
-    if user is None:
-        print('Неизвестный токен. Проверьте его или зарегистрируйте заново.')
-    return user
+    if token:    
+        user = json.loads(readdata)
+        if user is None:
+            print('Неизвестный токен. Проверьте его или зарегистрируйте заново.')
+        return user
 
+    await authenticate(reader, writer, nickname.replace(r'\n',''))
+      
 
 async def authorise(reader, writer, user):
     await reader_data(reader)
