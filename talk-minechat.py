@@ -28,14 +28,15 @@ async def register(reader, writer, token, nickname):
     await writer_data(writer, token)
 
     readdata = await reader_data(reader)
-    if token:    
-        user = json.loads(readdata)
-        if user is None:
-            print('Неизвестный токен. Проверьте его или зарегистрируйте заново.')
-        return user
-
-    await authenticate(reader, writer, nickname.replace(r'\n',''))
-      
+    if not token:    
+        await authenticate(reader, writer, nickname.replace(r'\n',''))
+        return
+    
+    user = json.loads(readdata)
+    if user is None:
+        print('Неизвестный токен. Проверьте его или зарегистрируйте заново.')
+    return user
+  
 
 async def authorise(reader, writer, user):
     await reader_data(reader)
