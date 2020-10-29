@@ -5,47 +5,51 @@ import logging
 import json
 
 
-async def reader_data(reader):
-    dataread = await reader.readline()
-    logging.debug(dataread.decode())
-    return dataread.decode()
+class UnknownTokenError(Exception):
+	pass
 
-async def writer_data(writer, message):
-    datawrite = message + '\n'
-    writer.write(datawrite.encode())
+
+async def get_reader_data(reader):
+    data = await reader.readline()
+    logging.debug(data.decode())
+    return data.decode()
+
+async def get_writer_data(writer, message):
+    data = message + '\n'
+    writer.write(data.encode())
     await writer.drain()
-    logging.debug(datawrite)
+    logging.debug(data)
 
 
 async def authenticate(reader, writer, nickname):
-    await writer_data(writer, nickname)
-    return json.loads(await reader_data(reader))
+    await get_writer_data(writer, nickname)
+    return json.loads(await get_reader_data(reader))
 
 
 async def register(reader, writer, token, nickname):
 
-    await reader_data(reader)
-    await writer_data(writer, token)
+    await get_reader_data(reader)
+    await get_writer_data(writer, token)
 
-    readdata = await reader_data(reader)
+    data = await get_reader_data(reader)
     if not token:    
         await authenticate(reader, writer, nickname.replace(r'\n',''))
         return
     
-    user = json.loads(readdata)
+    user = json.loads(data)
     if user is None:
-        print('Неизвестный токен. Проверьте его или зарегистрируйте заново.')
+        raise UnknownTokenError
     return user
   
 
 async def authorise(reader, writer, user):
-    await reader_data(reader)
-    await writer_data(writer, user["account_hash"])
-    readdata = await reader_data(reader)
+    await get_reader_data(reader)
+    await get_writer_data(writer, user["account_hash"])
+    data = await get_reader_data(reader)
 
 
 async def submit_message(writer, message):    
-    await writer_data(writer, message.replace(r'\n','')+'\n')        
+    await get_writer_data(writer, message.replace(r'\n','')+'\n')        
 
     
 async def minechat(parser_args):
@@ -78,4 +82,7 @@ if __name__ == '__main__':
     
     minechat = partial(minechat, parser_args=parser.parse_args())
 
-    asyncio.run(minechat())
+    try:
+        asyncio.run(minechat())
+    except UnknownTokenError:
+    	print('Неизвестный токен. Проверьте его или зарегистрируйте заново.')
